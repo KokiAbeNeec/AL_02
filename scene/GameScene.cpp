@@ -39,6 +39,62 @@ void GameScene::Initialize() {
 
 	// ライン描画が参照するビュープロジェクションを指定する（アドレス渡し）
 	PrimitiveDrawer::GetInstance()->SetViewProjection(&debugCamera_->GetViewProjection());
+
+	// X、Y、Z方向のスケーリングを設定
+	worldTransform_.scale_ = { 5,5,5 };
+	// スケーリング行列を宣言
+	Matrix4 matScale;
+	// スケーリング倍率を行列に設定する
+	matScale = MathUtility::Matrix4Identity();
+	matScale.m[0][0] = worldTransform_.scale_.x;
+	matScale.m[1][1] = worldTransform_.scale_.y;
+	matScale.m[2][2] = worldTransform_.scale_.z;
+
+	// X、Y、Z軸周りの回転角を設定
+	worldTransform_.rotation_ = { DtoR(45.0f),DtoR(45.0f),0 };
+	// 合成用回転行列を宣言
+	Matrix4 matRot;
+	// 各軸用回転行列を宣言
+	Matrix4 matRotX, matRotY, matRotZ;
+	// Z軸回転行列の各要素を設定する（回転角0z）
+	matRotZ = MathUtility::Matrix4Identity();
+	matRotZ.m[0][0] = cos(worldTransform_.rotation_.z);
+	matRotZ.m[0][1] = sin(worldTransform_.rotation_.z);
+	matRotZ.m[1][0] = -sin(worldTransform_.rotation_.z);
+	matRotZ.m[1][1] = cos(worldTransform_.rotation_.z);
+	// X軸回転行列の各要素を設定する（回転角0x）
+	matRotX = MathUtility::Matrix4Identity();
+	matRotX.m[1][1] = cos(worldTransform_.rotation_.x);
+	matRotX.m[1][2] = sin(worldTransform_.rotation_.x);
+	matRotX.m[2][1] = -sin(worldTransform_.rotation_.x);
+	matRotX.m[2][2] = cos(worldTransform_.rotation_.x);
+	// Y軸回転行列の各要素を設定する（回転角0y）
+	matRotY = MathUtility::Matrix4Identity();
+	matRotY.m[0][0] = cos(worldTransform_.rotation_.y);
+	matRotY.m[0][2] = sin(worldTransform_.rotation_.y);
+	matRotY.m[2][0] = -sin(worldTransform_.rotation_.y);
+	matRotY.m[2][2] = cos(worldTransform_.rotation_.y);
+	// 各軸の回転行列を合成
+	using namespace MathUtility;
+	matRot = matRotZ * matRotX * matRotY;
+
+	// X、Y、Z軸周りの平行移動を設定
+	worldTransform_.translation_ = { 10,10,10 };
+	// 平行移動行列を宣言
+	Matrix4 matTrans;
+	// 移動量を行列に設定する
+	matTrans = MathUtility::Matrix4Identity();
+	matTrans.m[3][0] = worldTransform_.translation_.x;
+	matTrans.m[3][1] = worldTransform_.translation_.x;
+	matTrans.m[3][2] = worldTransform_.translation_.x;
+
+	// worldTransform_.matWorld_に単位行列を代入する
+	worldTransform_.matWorld_ = MathUtility::Matrix4Identity();
+	// 行列の合成
+	worldTransform_.matWorld_ = matScale * matRot * matTrans;
+
+	// 行列の転送
+	worldTransform_.TransferMatrix();
 }
 
 void GameScene::Update() {

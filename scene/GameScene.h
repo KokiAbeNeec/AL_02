@@ -65,4 +65,7 @@ class GameScene {
 
 	// デバックカメラ
 	DebugCamera* debugCamera_ = nullptr;
+
+	// ラジアンへの変換関数
+	float DtoR(float d) { return MathUtility::PI / (180 / d); }
 };
